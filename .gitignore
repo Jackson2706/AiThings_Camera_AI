@@ -10,3 +10,6 @@ utils/__pycache__
 video
 weights
 deep_sort/deep_sort/deep/train.jpg
+test.py
+Dockerfile
+eval.py
