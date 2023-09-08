@@ -62,8 +62,8 @@ def updateCrossLight(image, box,time_stamp):
 lane_left = []
 lane_center = [453,174,605,174] 
 lane_right = []
-#capture = cv2.VideoCapture("rtsp://admin:Admin@123@27.72.149.50:1554/profile3/media.smp") # open one video
-capture = cv2.VideoCapture("/media/jackson/Extra/AI_Camera_CTARG/video_output.mp4") # open one video
+capture = cv2.VideoCapture("rtsp://admin:Admin@123@27.72.149.50:1554/profile3/media.smp") # open one video
+#capture = cv2.VideoCapture("/media/jackson/Extra/AI_Camera_CTARG/video_output.mp4") # open one video
 
 detector = Detector()
 i = 0
