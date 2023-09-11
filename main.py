@@ -14,7 +14,8 @@ exit_signal = threading.Event()
 
 # Hàng đợi để lưu trữ các frame từ video
 frame_queue = FrameCaptureQueue()
-is_completed = False
+
+frame_id = 0
 previous = {}
 current = {}
 t_counter1 = []
@@ -71,7 +72,8 @@ def video_capture_thread():
         ret, frame = cap.read()
         if not ret:
             break
-        frame_queue.push(frame)
+        frame_queue.push([frame_id,frame])
+        frame_id += 1
         print(frame_queue.count)
 
     cap.release()
@@ -83,7 +85,7 @@ def display_thread():
             continue
         torch.cuda.empty_cache()
         t = time.time()
-        frame = frame_queue.pop()
+        frame_item = frame_queue.pop()
         print(frame.shape)
         boxes = detector.detect(frame)
         if len(boxes):
