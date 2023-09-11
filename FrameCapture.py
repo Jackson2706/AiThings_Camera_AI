@@ -16,10 +16,14 @@ class FrameCaptureQueue:
         return frame
     
     def isEnough(self):
-        return self.count > 1000
+        return self.count > 10
     
     def isEmpty(self):
         return self.count == -1
+    
+    def isFull(self):
+        return self.count == 3000
+    
     
 
     
