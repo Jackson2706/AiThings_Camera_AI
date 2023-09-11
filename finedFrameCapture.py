@@ -80,7 +80,6 @@ class finedFrameCaptureQueue:
             for bb in boxes:
                 if bb[-1] == track_id:
                     bbox_list.append(bb)
-        print(type(frame_list[0]))
 
        
         draw_frame_list = []
@@ -88,6 +87,6 @@ class finedFrameCaptureQueue:
             draw_frame = drawObject(frame, bbox)
             draw_frame_list.append(draw_frame)
         output_path = f"./violations/{time}_{violation}.mkv"
-        print(draw_frame_list[0])
         frame_to_video(draw_frame_list, output_path)
+        print("Done! Creating video")
 
