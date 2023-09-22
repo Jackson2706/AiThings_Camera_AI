@@ -2,7 +2,7 @@ import cv2
 import threading
 from FrameCapture import FrameCaptureQueue
 from finedFrameCapture import finedFrameCaptureQueue
-import numpy as np
+import numpy as np 
 import time
 import torch.cuda
 from datetime import datetime
