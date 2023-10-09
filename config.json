@@ -1,5 +1,6 @@
 {   "detect_license_plate": false,
-    "local_video_path": "",
+    "local_video_path": "/home/aithings_jetson_agx_xavier/Desktop/JetsonYolov5/test2.mp4",
+    "cordinate_light": [3520,128,3584,396],
     "lane_center_local_video": [
         432,
         1060,
@@ -11,6 +12,17 @@
     ],
     "lane_right_local_video": [
         
-    ]
+    ],
+    "label": {
+            "car": "Xe ô tô",
+            "person": "Xe máy",
+            "motorcycle": "Xe máy",
+            "bus": "Xe buýt",
+            "truck": "Xe tải",
+            "": "Khác"
+    },
+    "time_sleep": 10,
+    "resize_frame": [1280,960]
+    
 
 }
