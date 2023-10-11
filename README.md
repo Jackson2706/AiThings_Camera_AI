@@ -1,107 +1,107 @@
-Running YoloV5 with TensorRT Engine on Jetson.
-==========
+I.Tổng quan 
+=====================
 
-This repository contains step by step guide to build and convert YoloV5 model into a TensorRT engine on Jetson. This has been tested on Jetson Nano or Jetson Xavier 
+AiThings_Camera_AI là một phần của hệ thống phát hiện vi phạm và phạt nguội . Hệ thống sẽ giúp tăng cường giám sát, từ đó tăng hiệu quả quản lý giao thông vốn phức tạp ở Việt Nam 
 
-Please install Jetpack OS version 4.6 as mentioned by Nvidia and follow below steps. Please follow each steps exactly mentioned in the video links below :
+Hiện nay đã có ứng dụng của camera phạt nguội tuy nhiên gặp phải nhiều hạn chế do các camera chỉ gửi dữ liệu video về máy chủ để xử lí làm cho lượng xử lí tại máy chủ là quá lớn, Tốn nhiều nhân lực để duy trì , vận hành cũng như rủi do quá tải tại trung tâm kiểm soát. Do đó Camera_AI sẽ giải quyết được nhược điểm trên do phần xử lí sẽ được thực hiện ngay tại camera. 
 
-Build YoloV5 TensorRT Engine on Jetson Nano: https://www.youtube.com/watch?v=ErWC3nBuV6k
+### Các chức năng tích hợp trong dự án: 
+ - Phát hiện đối tượng vi phạm luật giao thông 
 
-Object Detection YoloV5 TensorRT Engine on Jetson Nano: https://www.youtube.com/watch?v=-Vu65N1NRWw
+- Phát hiện loại lỗi vi phạm của phương tiện ô tô, xe máy, xe bus 
 
-Jetson Xavier:
+- phát hiện biển số xe của đối tượng vi phạm 
 
-<img src="videos/out.jpg" width="800"/>
+Sau khi phát hiện sự kiện lỗi, đẩy dữ liệu đối tượng lên hệ thống để lưu trữ và xử lí 
 
-Install Libraries
+### Dữ liệu vi phạm bao gồm: 
+- Loại phương tiện 
+
+- Lỗi vi phạm 
+
+- Thời gian vi phạm 
+
+- Ảnh vi phạm 
+
+- Video vi phạm 
+
+- Ảnh biển số xe 
+
+- Biển số xe 
+
+
+II.Cài đặt và chạy dự án trên jetson AGX 
 =============
-Please install below libraries::
+1.Tải code về jetson AGX:
+======
 
-    $ sudo apt-get update
-	$ sudo apt-get install -y liblapack-dev libblas-dev gfortran libfreetype6-dev libopenblas-base libopenmpi-dev libjpeg-dev zlib1g-dev
-	$ sudo apt-get install -y python3-pip
+    $ git clone https://github.com/Jackson2706/AiThings_Camera_AI.git
 	
 
-Install below python packages
+2.Cài đặt thư viện 
 =============
-Numpy comes pre installed with Jetpack, so make sure you uninstall it first and then confirm if it's uninstalled or not. Then install below packages:
+#### PyTorch v1.7.0 (JetPack 4.4) 
 
-    $ numpy==1.19.0
-	$ pandas==0.22.0
-	$ Pillow==8.4.0
-	$ PyYAML==3.12
-	$ scipy==1.5.4
-	$ psutil
-	$ tqdm==4.64.1
-	$ imutils
+	$ wget https://nvidia.box.com/shared/static/wa34qwrwtk9njtyarwt5nvo6imenfy26.whl -o torch-1.7.0-cp36-cp36m-linux_aarch64.whl 
+	$ sudo apt-get install python3-pip libopenblas-base libopenmpi-dev  
+	$ pip3 install Cython 
+	$ pip3 install numpy torch-1.7.0-cp36-cp36m-linux_aarch64.whl 
 
-Install PyCuda
-=============
-We need to first export few paths
-
-	$ export PATH=/usr/local/cuda-10.2/bin${PATH:+:${PATH}}
-	$ export LD_LIBRARY_PATH=/usr/local/cuda-10.2/lib64:$LD_LIBRARY_PATH
-	$ python3 -m pip install pycuda --user
-	
-
-Install Seaborn
-=============
-
-    $ sudo apt install python3-seaborn
-	
-Install torch & torchvision
-=============
-
-	$ wget https://nvidia.box.com/shared/static/fjtbno0vpo676a25cgvuqc1wty0fkkg6.whl -O torch-1.10.0-cp36-cp36m-linux_aarch64.whl
-	$ pip3 install torch-1.10.0-cp36-cp36m-linux_aarch64.whl
-	$ git clone --branch v0.11.1 https://github.com/pytorch/vision torchvision
-	$ cd torchvision
+#### Torchvision v0.5.0 (compatible with PyTorch v1.4.0) 
+	$ sudo apt-get install libjpeg-dev zlib1g-dev libpython3-dev libavcodec-dev libavformat-dev libswscale-dev 
+	$ git clone --branch v0.8.1 https://github.com/pytorch/vision torchvision  
+	$ cd torchvision 
+	$ export BUILD_VERSION=0.8.1  # where 0.x.0 is the torchvision version   
 	$ sudo python3 setup.py install 
-	
-### Not required but good library
-sudo python3 -m pip install -U jetson-stats==3.1.4
+	$ cd ../  
+	$ pip install 'pillow<7' 
 
-This marks the installation of all the required libraries.
+#### Opencv 
+OpenCV v4.1.1 (Python2.7/3.6+ JetPack4.3/4.4) 
 
-------------------------------------------------------------------------------------------
+	$ cd ~ 
+	# purge old-version 
+	$ sudo apt-get purge libopencv* 
+	$ bash <(wget -qO- https://github.com/yqlbu/jetson-packages-family/raw/master/OpenCV/install_opencv4.1.1_jetson.sh) 
 
-Generate wts file from pt file
-=============
-Yolov5s.pt and Yolov5n.pt are already provided in the repo. But if you want you can download any other version of the yolov5 model. Then run below command to convert .pt file into .wts file 
+#### Pandas 
 
-	$ cd JetsonYoloV5
-	$ python3 gen_wts.py -w yolov5s.pt -o yolov5s.wts
-	
-Make
-=============
-Create a build directory inside yolov5. Copy and paste generated wts file into build directory and run below commands. If using custom model, make sure to update kNumClas in yolov5/src/config.h
+Pandas v1.2.0(Latest) 
 
-	$ cd yolov5/
-	$ mkdir build
-	$ cd build
-	$ cp ../../yolov5s.wts .
-	$ cmake ..
-	$ make 
-	
-Build Engine file 
-=============
+	$ pip3 install -U pandas –user 
 
-    $ ./yolov5_det -s yolov5s.wts yolov5s.engine s
-	
+#### Seaborn 
+Seaborn v0.11.1(Latest) 
 
-Testing Engine file 
-=============
+	$ pip3 install -U seaborn --user 
 
-	$ ./yolov5_det -d yolov5s.engine ../images
-	
-This will do inferencing over images and output will be saved in build directory.
+#### Numpy 
 
------------------------------------------------------------------------------------------
+Numpy v1.19.4(Latest) 
 
-Python Object Detection
-=============
-Use `app.py` to do inferencing on any video file or camera.
+	$ pip3 install -U numpy --user 
 
-	$ python3 app.py
+ #### Pycuda 
 
-If you have custom model, make sure to update categories as per your classes in `yolovDet.py` .
+Pycuda v2019.1.2(Latest) 
+
+	$ pip3 install -U pycuda –user 
+
+#### Scipy 
+Scipy v1.6.0(Latest) 
+
+	$ apt-get install libatlas-base-dev gfortran 
+	$ pip3 install -U scipy –user 
+
+ 
+
+#### onether library 
+
+Một số thư viện khác phù hợp với Jetpack version  
+
+	link: https://gitee.com/Cheng_Loon/jetson-packages-family-good#jetson-packages-family 
+Chạy chương trình 
+=====
+ Sau khi hoàn tất các thư viện, có thê chạy toàn bộ dự án bằng lệnh sau: 
+
+ 	$ ./run.sh 
